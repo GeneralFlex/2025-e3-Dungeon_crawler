@@ -11,6 +11,10 @@ public class PlayerMovement : MonoBehaviour
     private float speed;
     [HideInInspector]
     public float speedDebuff;
+    [Header("Abilities")]
+    [SerializeField] private float dashForce = 100f;
+    [SerializeField] private float dashCooldown = 1f;
+    private bool canDash = true;
 
     private Rigidbody2D rb;
     private Vector2 movement;
@@ -37,6 +41,10 @@ public class PlayerMovement : MonoBehaviour
         {
             movement = movement.normalized * diagonalSpeed;
         }
+        if(Input.GetKeyUp(KeyCode.Space) && canDash)
+        {
+            Dash();
+        }
     }
 
     // fix update for physics calculations :tuzar:
@@ -47,6 +55,22 @@ public class PlayerMovement : MonoBehaviour
 
         // smooth movement
         rb.velocity = Vector2.SmoothDamp(rb.velocity, movement * speed, ref velocity, smoothTime);
+    }
+
+    void Dash()
+    {
+        rb.AddForce(movement.normalized* speed * dashForce, ForceMode2D.Impulse);
+        StartCoroutine(DashCooldown());
+    }
+
+    IEnumerator DashCooldown()
+    {
+        canDash = false;
+        //float originalSmoothTime = smoothTime;
+        //smoothTime = 0.05f;
+        yield return new WaitForSeconds(dashCooldown);
+        //smoothTime = originalSmoothTime;
+        canDash = true;
     }
 
 
