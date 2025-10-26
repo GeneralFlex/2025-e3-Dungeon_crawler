@@ -5,14 +5,10 @@ using UnityEngine;
 public class Damage : MonoBehaviour
 {
     [Header("Basic Settings")]
-    [SerializeField]
-    private int damage;
-    [SerializeField]
-    private int knockbackForce;
-    //[SerializeField]
-    //private int cooldown;
-    [SerializeField]
-    private bool destroyOnHit = false;
+    [SerializeField] private int damage;
+    [SerializeField] private int knockbackForce;
+    //[SerializeField] private int cooldown;
+    [SerializeField] private bool destroyOnHit = false;
 
     private HashSet<GameObject> ignore = new HashSet<GameObject>();
 

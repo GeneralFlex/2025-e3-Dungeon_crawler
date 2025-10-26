@@ -5,17 +5,11 @@ using UnityEngine.Events;
 
 public class Health : MonoBehaviour
 {
-    [SerializeField]
-    private int maxHealth = 100;
-    [SerializeField]
-    private int currentHealth;
-    [SerializeField]
-    private bool destroyOnDeath = true;
-    //[SerializeField]
-    //private GameObject healthBar;
-    [SerializeField]
-    private int immunityFrames = 60;
-    [SerializeField]
+    [SerializeField] private int maxHealth = 100;
+    [SerializeField] private int currentHealth;
+    [SerializeField] private bool destroyOnDeath = true;
+    //[SerializeField] private GameObject healthBar;
+    [SerializeField] private int immunityFrames = 60;
 
     //events
     [HideInInspector]
