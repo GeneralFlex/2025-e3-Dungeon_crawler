@@ -11,19 +11,40 @@ public class BSP : MonoBehaviour
     [SerializeField] private int maxRoomSize = 15;
     [SerializeField] private int margin = 1;
     [SerializeField] private bool shift = true;
-    [SerializeField, Range(0, 100)] private int percentToEliminate = 25;
+    [SerializeField] private int maximumRooms = 7;
     [SerializeField] private int minimumRooms = 5;
     private List<BoundsInt> rooms = new List<BoundsInt>();
-
+    public BoundsInt GetFloorSize()
+    {
+        return floorSize;
+    }
     public List<BoundsInt> GetRooms()
     {
         return rooms;
     }
+
+    public HashSet<Vector2Int> GetRoomTiles()
+    {
+        HashSet<Vector2Int> roomTiles = new HashSet<Vector2Int>();
+        foreach (BoundsInt room in rooms)
+        {
+            for (int x = room.min.x; x < room.max.x; x++)
+            {
+                for (int y = room.min.y; y < room.max.y; y++)
+                {
+                    roomTiles.Add(new Vector2Int(x, y));
+                }
+            }
+        }
+        return roomTiles;
+    }
+
     public List<BoundsInt> GenerateRooms()
     {
-        return GenerateRooms(floorSize, minRoomSize, maxRoomSize, margin, percentToEliminate, shift);
+        return GenerateRooms(floorSize, minRoomSize, maxRoomSize, margin, minimumRooms, maximumRooms, shift);
     }
-    private List<BoundsInt> GenerateRooms(BoundsInt floor, int MinRoomSize, int MaxRoomSize, int Margin, int PercentToEliminate, bool Shift)
+
+    private List<BoundsInt> GenerateRooms(BoundsInt floor, int MinRoomSize, int MaxRoomSize, int Margin, int minimumRooms, int maximumRooms, bool Shift)
     {
         int safetyCap = 10000;
         int safetyCounter = 0;
@@ -56,12 +77,19 @@ public class BSP : MonoBehaviour
                 }
             }
         }
-        int toEliminate = Mathf.FloorToInt(roomsList.Count * (PercentToEliminate / 100f));
-        for (int i = 0; i < toEliminate; i++)
+
+        //clamp to min/max rooms
+        if (roomsList.Count < minimumRooms)
+        {
+            Debug.LogWarning($"Generated rooms ({roomsList.Count}) less than minimum required ({minimumRooms}). Regenerating...");
+            return GenerateRooms(floor, MinRoomSize, MaxRoomSize, Margin, minimumRooms, maximumRooms, Shift);
+        }
+        for (int i = roomsList.Count; i > maximumRooms; i--)
         {
             int rndIndex = Random.Range(0, roomsList.Count);
             roomsList.RemoveAt(rndIndex);
         }
+        //shift
         for (int i = 0; i < roomsList.Count; i++)
         {
             int shiftX = Shift ? Random.Range(-Margin, Margin + 1) : 0;
@@ -70,15 +98,11 @@ public class BSP : MonoBehaviour
             BoundsInt room = roomsList[i];
 
             room.min += new Vector3Int(Margin + shiftX, Margin + shiftY, 0);
-            room.size -= new Vector3Int(Margin * 2, Margin * 2, 0);
+            room.size -= new Vector3Int(Margin * 2-1, Margin * 2-1, 0);
 
             roomsList[i] = room;
         }
-        if(roomsList.Count < minimumRooms)
-        {
-            Debug.LogWarning($"Generated rooms ({roomsList.Count}) less than minimum required ({minimumRooms}). Regenerating...");
-            return GenerateRooms(floor, MinRoomSize, MaxRoomSize, Margin, PercentToEliminate, Shift);
-        }
+        
         rooms = roomsList;
         Debug.Log($"Generated {roomsList.Count} rooms");
         return roomsList;
