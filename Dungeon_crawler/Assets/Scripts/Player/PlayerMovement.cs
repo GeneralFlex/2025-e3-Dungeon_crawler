@@ -1,12 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] private float walkSpeed = 4f;
     [SerializeField] private float runSpeed = 7f;
-    [SerializeField] private float diagonalSpeed = 1.4f;
     [SerializeField] private float smoothTime = 0.1f;
     private float speed;
     [HideInInspector]
@@ -17,59 +17,55 @@ public class PlayerMovement : MonoBehaviour
     private bool canDash = true;
 
     private Rigidbody2D rb;
-    private Vector2 movement;
+    private Vector2 movementDir;
     private Vector2 velocity = Vector2.zero;
 
-    // Start is called before the first frame update
-    void Start()
+    // Input System
+    private PlayerInput playerInput;
+    private InputAction moveAction;
+    private InputAction dashAction;
+
+    private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        playerInput = GetComponent<PlayerInput>();
+
+        moveAction = playerInput.actions["Move"];
+        dashAction = playerInput.actions["Dash"];
+
+        moveAction.performed += OnMove;
+        dashAction.performed += OnDash;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void OnMove(InputAction.CallbackContext context)
     {
-        // input keys stored in movement vector
-        movement = new Vector2();
-        if (Input.GetKey(KeyCode.W)) movement.y += 1;
-        if (Input.GetKey(KeyCode.S)) movement.y -= 1;
-        if (Input.GetKey(KeyCode.A)) movement.x -= 1;
-        if (Input.GetKey(KeyCode.D)) movement.x += 1;
+        movementDir = context.ReadValue<Vector2>();
+    }
 
-        // make the vector normalized (only direction, value=1) to prevent faster diagonal movement
-        if (movement.magnitude > 1)
-        {
-            movement = movement.normalized * diagonalSpeed;
-        }
-        if(Input.GetKeyUp(KeyCode.Space) && canDash)
+    private void OnDash(InputAction.CallbackContext context)
+    {
+        if (canDash)
         {
             Dash();
         }
     }
 
-    // fix update for physics calculations :tuzar:
     void FixedUpdate()
     {
-        // if sprinting, use run speed, else use walk speed, apply speed debuff
         speed = Input.GetKey(KeyCode.LeftShift) ? runSpeed / (1 + speedDebuff) : walkSpeed / (1 + speedDebuff);
-
-        // smooth movement
-        rb.velocity = Vector2.SmoothDamp(rb.velocity, movement * speed, ref velocity, smoothTime);
+        rb.linearVelocity = Vector2.SmoothDamp(rb.linearVelocity, movementDir * speed, ref velocity, smoothTime);
     }
 
     void Dash()
     {
-        rb.AddForce(movement.normalized* speed * dashForce, ForceMode2D.Impulse);
+        rb.AddForce(movementDir.normalized* speed * dashForce, ForceMode2D.Impulse);
         StartCoroutine(DashCooldown());
     }
 
     IEnumerator DashCooldown()
     {
         canDash = false;
-        //float originalSmoothTime = smoothTime;
-        //smoothTime = 0.05f;
         yield return new WaitForSeconds(dashCooldown);
-        //smoothTime = originalSmoothTime;
         canDash = true;
     }
 

@@ -2,18 +2,21 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.UIElements;
 
 public class Visualiser : MonoBehaviour
 {
     [Header("Tiles")]
     [SerializeField] private TileBase floorTile;
-    [SerializeField] private TileBase wallTile;
     [SerializeField] private TileBase pathTile;
+    [SerializeField] private TileBase wallTile;
+    [SerializeField] private TileBase backgroundTile;
 
     [SerializeField] private Grid grid;
     [SerializeField] private Tilemap floorTilemap;
-    [SerializeField] private Tilemap wallTilemap;
     [SerializeField] private Tilemap pathTilemap;
+    [SerializeField] private Tilemap wallTilemap;
+    [SerializeField] private Tilemap backgroundTilemap;
 
 
 
@@ -50,11 +53,21 @@ public class Visualiser : MonoBehaviour
         }
     }
 
+    //background visualisation
+    public void VisualiseBackground(HashSet<Vector2Int> positions)
+    {
+        foreach (Vector2Int pos in positions.Distinct())
+        {
+            backgroundTilemap.SetTile((Vector3Int)pos, backgroundTile);
+        }
+    }
+
     //clear
     public void ClearAll()
     {
         floorTilemap?.ClearAllTiles();
         pathTilemap?.ClearAllTiles();
         wallTilemap?.ClearAllTiles();
+        backgroundTilemap?.ClearAllTiles();
     }
 }

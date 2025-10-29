@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class WallGenerator : MonoBehaviour
 {
-    public HashSet<Vector2Int> GenerateWalls(HashSet<Vector2Int> floorTiles)
+    public HashSet<Vector2Int> GenerateWalls(HashSet<Vector2Int> floorTiles, int width)
     {
         HashSet<Vector2Int> wallTiles = new HashSet<Vector2Int>();
 
@@ -28,6 +28,27 @@ public class WallGenerator : MonoBehaviour
                 }
             }
         }
+        HashSet<Vector2Int> thickWalls = new HashSet<Vector2Int>(wallTiles);
+
+        for (int i = 0; i < width; i++)
+        {
+            HashSet<Vector2Int> temp = new HashSet<Vector2Int>(thickWalls);
+
+            foreach (Vector2Int wall in temp)
+            {
+                foreach (Vector2Int d in dir)
+                {
+                    Vector2Int nb = wall + d;
+                    if (!floorTiles.Contains(nb) && !thickWalls.Contains(nb))
+                    {
+                        thickWalls.Add(nb);
+                    }
+                }
+            }
+        }
+
+        wallTiles.UnionWith(thickWalls);
+
 
         return wallTiles;
     }

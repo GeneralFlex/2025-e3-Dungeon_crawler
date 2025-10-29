@@ -12,9 +12,13 @@ public class Damage : MonoBehaviour
 
     private HashSet<GameObject> ignore = new HashSet<GameObject>();
 
+    public void SetDamage(int damage)
+    {
+        this.damage = damage;
+    }
+
     private void OnTriggerStay2D(Collider2D other)
     {
-        Debug.Log("collided with " + other.name);
         if (ignore.Contains(other.gameObject)) return;
         if (!other.TryGetComponent(out Health health)) { ignore.Add(other.gameObject); return; }
         
